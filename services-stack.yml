@@ -1,0 +1,65 @@
+services:
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: filebrowser
+    ports:
+      - "3000:80"
+    volumes:
+      - /media/Docker/filebrowser/shared:/srv
+      - /media/Docker/filebrowser/db:/database
+      - /media/Docker/filebrowser/config:/config
+      - /media/Downloads:/srv/downloads
+      - /mnt/Makko:/srv/makko
+      - /mnt/Hikki:/srv/hikki
+      - /mnt/Expansion:/srv/poppyseed
+      - /media:/srv/media
+    restart: unless-stopped
+
+
+  komga:
+    image: gotson/komga
+    container_name: komga
+    volumes:
+      - type: bind
+        source: /media/Docker/Komga
+        target: /config
+      - type: bind
+        source: /media/Comics
+        target: /data/Comics
+      - type: bind
+        source: /media/Manga
+        target: /data/Manga
+        read_only: true
+    ports:
+      - 25600:25600
+    environment:
+      - TZ=Asia/Colombo
+    restart: unless-stopped
+
+
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Colombo
+    volumes:
+      - ./config:/config
+      - /data:/data
+      - /mnt/Makko:/mnt/Makko          
+      - /mnt/Hikki:/mnt/Hikki   
+      - /mnt/Expansion:/mnt/PoppySeed
+      - /mnt/Expansion:/mnt/Expansion
+    devices:
+      - /dev/dri:/dev/dri
+    ports:
+      - 8096:8096
+      - 7359:7359/udp
+      - 1900:1900/udp
+    restart: unless-stopped
+
+volumes:
+  scrutiny_config:
+  scrutiny_influxdb:

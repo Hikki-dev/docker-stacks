@@ -1,0 +1,8 @@
+# Don't upload system data
+*.tar.gz
+/media/
+/docker/
+/mnt/
+/config/
+/Downloads/
+.env
