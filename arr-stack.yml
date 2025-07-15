@@ -1,35 +1,28 @@
-# Compose file for the *arr stack. Configuration files are stored 
-# in a docker folder mounted in root. Change to bind mounts if needed.
-# All containers are ran with user and group ids of the main user and 
-# share to aviod permissions issues of downloaded files, please refer
-# the read me file for more information.
+version: "3.9"
 
 services:
-
-# This is a new addition since creating the tutorial video on this stack. 
-# See the 'qBittorrent Stalls with VPN Timeout' section for more information.
   deunhealth:
     image: qmcgaw/deunhealth
     container_name: deunhealth
     network_mode: "none"
+    restart: always
+    mem_limit: 512m
+    cpus: 0.5
     environment:
       - LOG_LEVEL=info
       - HEALTH_SERVER_ADDRESS=127.0.0.1:9999
       - TZ=Asia/Colombo
-    restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      
-# Healthcheck was added to work with deunhealth to restart container
-# on unhealthy status. labels allows deunhealth to monitor.
- # Healthcheck was added to work with deunhealth to restart container
-# on unhealthy status. labels allows deunhealth to monitor.
+
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
     labels:
       - deunhealth.restart.on.unhealthy=true
-    restart: unless-stopped
     environment:
       - PUID=1000
       - PGID=1000
@@ -40,21 +33,20 @@ services:
     volumes:
       - /media/Docker/Portainer/qbittorrent:/config
       - /media/Downloads:/downloads
-      - /media/Downloads:/media/downloads
     healthcheck:
-        test: ping -c 1 www.google.com || exit 1
-        interval: 60s
-        retries: 3
-        start_period: 20s
-        timeout: 10s
-    ports:
-      - 9166:9166 #WebUI
-      - 6881:6881 #TorrentPort
-    network_mode: host 
+      test: ping -c 1 www.google.com || exit 1
+      interval: 60s
+      retries: 3
+      start_period: 20s
+      timeout: 10s
+    network_mode: host
 
   heimdall:
     image: lscr.io/linuxserver/heimdall:latest
     container_name: heimdall
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
     environment:
       - PUID=1000
       - PGID=1000
@@ -62,14 +54,15 @@ services:
     volumes:
       - /media/Docker/Heimdall:/config
     ports:
-     - 81:80 
-     - 444:443
-    #network_mode: host
-    restart: unless-stopped
-        
+      - 81:80
+      - 444:443
+
   jellyseerr:
-    container_name: jellyseerr
     image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
     labels:
       - deunhealth.restart.on.unhealthy=true
     environment:
@@ -79,14 +72,16 @@ services:
     volumes:
       - /media/Docker/Jellyseer:/app/config
     ports:
-      - 5055:5055 # Expose Jellyseerr's port on your local network
-    restart: unless-stopped
+      - 5055:5055
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
     labels:
       - deunhealth.restart.on.unhealthy=true
-    container_name: prowlarr
     environment:
       - PUID=1000
       - PGID=1000
@@ -94,18 +89,17 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /docker/prowlarr:/config
-    restart: unless-stopped
     ports:
-     - 9696:9696 #Prowlarr
-
-
+      - 9696:9696
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
-    labels:
-      - deunhealth.restart.on.unhealthy=true
     container_name: sonarr
     restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    labels:
+      - deunhealth.restart.on.unhealthy=true
     environment:
       - PUID=1000
       - PGID=1000
@@ -117,16 +111,17 @@ services:
       - /mnt/Hikki:/mnt/Hikki
       - /mnt/Expansion:/mnt/PoppySeed
       - /media/Downloads:/downloads
-      - /media/Downloads:/media/downloads
     ports:
-      - 8989:8989 #Sonarr
+      - 8989:8989
 
   radarr:
     image: lscr.io/linuxserver/radarr:latest
-    labels:
-      - deunhealth.restart.on.unhealthy=true
     container_name: radarr
     restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    labels:
+      - deunhealth.restart.on.unhealthy=true
     environment:
       - PUID=1000
       - PGID=1000
@@ -136,18 +131,17 @@ services:
       - /docker/radarr:/config
       - /mnt/Expansion/Movies:/media/Movies
       - /media/Downloads:/downloads
-      - /media/Downloads:/media/downloads
     ports:
-      - 7878:7878 #Radarr
-
-
+      - 7878:7878
 
   bazarr:
     image: lscr.io/linuxserver/bazarr:latest
-    labels:
-      - deunhealth.restart.on.unhealthy=true
     container_name: bazarr
     restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    labels:
+      - deunhealth.restart.on.unhealthy=true
     environment:
       - PUID=1000
       - PGID=1000
@@ -159,17 +153,19 @@ services:
       - /mnt/Hikki:/mnt/Hikki
       - /mnt/Makko:/mnt/Makko
       - /mnt/Expansion:/mnt/PoppySeed
-      - /media/Movies:/media/Movies
-    network_mode: host 
+      - /mnt/Expansion/Movies:/media/Movies
+    network_mode: host
 
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
     labels:
       - deunhealth.restart.on.unhealthy=true
-    container_name: flaresolverr
-    ports:
-      - 8191:8191 #Flaresolverr
-    restart: unless-stopped
     environment:
       - LOG_LEVEL=info
       - TZ=Asia/Colombo
+    ports:
+      - 8191:8191
