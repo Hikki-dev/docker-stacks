@@ -1,0 +1,184 @@
+version: "3.9"
+
+services:
+  deunhealth:
+    image: qmcgaw/deunhealth
+    container_name: deunhealth
+    network_mode: "none"
+    restart: always
+    mem_limit: 512m
+    cpus: 0.5
+    environment:
+      - LOG_LEVEL=info
+      - HEALTH_SERVER_ADDRESS=127.0.0.1:9999
+      - TZ=Asia/Qatar
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    security_opt:
+      - apparmor=unconfined
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    labels:
+      - deunhealth.restart.on.unhealthy=true
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Qatar
+      - WEBUI_PORT=9166
+      - TORRENTING_PORT=6881
+      - DOCKER_MODS=ghcr.io/vuetorrent/vuetorrent-lsio-mod:latest
+    volumes:
+      - /media/Docker/Portainer/qbittorrent:/config
+      - /mnt/Media:/mnt/Media
+      - /mnt/Media/Downloads:/mnt/Media/Downloads
+    healthcheck:
+      test: ping -c 1 www.google.com || exit 1
+      interval: 60s
+      retries: 3
+      start_period: 20s
+      timeout: 10s
+    network_mode: host
+    security_opt:
+      - apparmor=unconfined
+
+  heimdall:
+    image: lscr.io/linuxserver/heimdall:latest
+    container_name: heimdall
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Qatar
+    volumes:
+      - /media/Docker/Heimdall:/config
+    ports:
+      - 81:80
+      - 444:443
+    security_opt:
+      - apparmor=unconfined
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    labels:
+      - deunhealth.restart.on.unhealthy=true
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Qatar
+    volumes:
+      - /media/Docker/Jellyseer:/app/config
+    ports:
+      - 5055:5055
+    security_opt:
+      - apparmor=unconfined
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    labels:
+      - deunhealth.restart.on.unhealthy=true
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Qatar
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /docker/prowlarr:/config
+    ports:
+      - 9696:9696
+    security_opt:
+      - apparmor=unconfined
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    labels:
+      - deunhealth.restart.on.unhealthy=true
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Qatar
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /mnt/Media:/mnt/Media
+      - /mnt/Media/Downloads:/mnt/Media/Downloads
+    ports:
+      - 8989:8989
+    security_opt:
+      - apparmor=unconfined
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    labels:
+      - deunhealth.restart.on.unhealthy=true
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Qatar
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /docker/radarr:/config
+      - /mnt/Media:/mnt/Media
+      - /mnt/Media/Downloads:/mnt/Media/Downloads
+    ports:
+      - 7878:7878
+    security_opt:
+      - apparmor=unconfined
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    labels:
+      - deunhealth.restart.on.unhealthy=true
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Qatar
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /docker/bazarr:/config
+      - /data:/data
+      - /mnt/Media:/mnt/Media
+    network_mode: host
+    security_opt:
+      - apparmor=unconfined
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    labels:
+      - deunhealth.restart.on.unhealthy=true
+    environment:
+      - LOG_LEVEL=info
+      - TZ=Asia/Qatar
+    ports:
+      - 8191:8191
+    security_opt:
+      - apparmor=unconfined
